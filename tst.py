@@ -9,7 +9,7 @@ from itertools import zip_longest
 
 
 
-myfile = open("C:\\Users\\Alaoui\\Desktop\\food recipes\\movies2.csv", "a")
+myfile = open("/Users/oalaoui-/Desktop/food-recipes/movies2.csv", "a")
 wr = csv.writer(myfile)
 # wr.writerow(["movi_name", "movi_image", "movi_hestory", "movi_url_video", "type"])
 cuisine = ["chinese", "italian"]
@@ -17,6 +17,7 @@ recipe_url = []
 recipe_name = []
 recipes_image = []
 recipe_ingredient = []
+recipe_nutrition = []
 
 
 #get number of page
@@ -44,41 +45,49 @@ for a in range(0, 1):
 			
 			#find url of recipe
 			url = recipe[i]["href"]
-   		# 	#find name of recipe
-		# 	recipe_name.append(recipe[i].text)
-			
-   		# 	#find image of recipe
-		# 	# image = soup.find("img", {"class": "img-responsive"})
-		# 	# recipes_image.append(image["data-src"])
+   			
+      		#find name of recipe
+			recipe_name.append(recipe[i].text)
+	
+			#find image of recipe
+			image = soup.find_all("img", {"class": "svg-image"})
+			image = image[i]["data-src"]
+			recipes_image.append(image)
 
-			#find preparation time of recipe
-			# result = requests.get(url)
-			# src = result.content
-			# soup = BeautifulSoup(src, "lxml")
-			# prep_time = soup.find("span", {"class": "text"})
-			# prep_time = prep_time.text
-			# prep_time = prep_time.replace("\n", "")
-			# prep_time = prep_time.replace("\t", "")
-			# prep_time = prep_time.replace("\r", "")
-			# prep_time = prep_time.replace(" ", "")
-			# prep_time = prep_time.replace("mins", "")
-			# prep_time = prep_time.replace("min", "")
-			# #find ingredients of recipe
-			# ingredient = soup.find("div", {"class": "ingredient-list"})
-			# ingredient = ingredient.find_all("li")
-			# for y in range(0, len(ingredient)):
-			# 	ingredient[y] = ingredient[y].text
-			# 	ingredient[y] = ingredient[y].replace("\u200b", "")
-			# 	ingredient[y] = ingredient[y].replace("\u2044", "/")
-			# 	recipe_ingredient.append(ingredient[y].text+"/")
+			# find preparation time of recipe
+			result = requests.get(url)
+			src = result.content
+			soup = BeautifulSoup(src, "lxml")
+			prep_time = soup.find("span", {"class": "text"})
+			prep_time = prep_time.text
+			prep_time = prep_time.replace("\n", "")
+			prep_time = prep_time.replace("\t", "")
+			prep_time = prep_time.replace("\r", "")
+			prep_time = prep_time.replace(" ", "")
+			prep_time = prep_time.replace("mins", "")
+			prep_time = prep_time.replace("min", "")
+			#find ingredients of recipe
+			ingredient = soup.find("div", {"class": "ingredient-list"})
+			ingredient = ingredient.find_all("li")
+			for y in range(0, len(ingredient)):
+				ingredient[y] = ingredient[y].text
+				ingredient[y] = ingredient[y].replace("\u200b", "")
+				ingredient[y] = ingredient[y].replace("\u2044", "/")
+				recipe_ingredient.append(ingredient[y]+"/")
 
-			#find method of preparation of recipe
-			method = soup.find("div", {"class": "method-list"})
-			method = method.find_all("li")
-			for y in range(0, len(method)):
-				# recipe_ingredient.append(method[y].text+"/")
-				print(method[y].text)
+			#find nutrition of recipe
+			result = requests.get(url)
+			src = result.content
+			soup = BeautifulSoup(src, "lxml")
+			nutrition = soup.find("ul", {"class": "nutrition-list"})
+			nutrition = nutrition.find_all("li")
+			for y in range(0, len(nutrition)):
+				nutrition[y] = nutrition[y].text
+				nutrition[y] = nutrition[y].replace("\u200b", "")
+				nutrition[y] = nutrition[y].replace("\u2044", "/")
+				nutrition[y] = nutrition[y].replace("\n", "")
+				nutrition[y] = nutrition[y].replace("\t", "")
+				recipe_nutrition.append(nutrition[y]+"/")
 
-
-			# #write in csv
-			# wr.writerow([name, image, story, video, type])
+			#write in csv
+			wr.writerow([recipe_name[i], recipes_image[i], prep_time, recipe_ingredient[i], recipe_nutrition[i]])
