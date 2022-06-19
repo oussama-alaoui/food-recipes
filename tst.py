@@ -9,20 +9,18 @@ from itertools import zip_longest
 
 
 
-myfile = open("/Users/oalaoui-/Desktop/food-recipes/movies2.csv", "a")
-wr = csv.writer(myfile)
-# wr.writerow(["movi_name", "movi_image", "movi_hestory", "movi_url_video", "type"])
-cuisine = ["chinese", "italian"]
-recipe_url = []
-recipe_name = []
-recipes_image = []
-recipe_ingredient = []
-recipe_nutrition = []
+cuisine = ["meat", "fruit", "vegetables", "dairy", "grains-pulses", "banana-recipes", "chocolate", "coffee"]
 
 
 #get number of page
-for a in range(0, 1):
-	#chack all page whit number
+for a in range(0, len(cuisine)):
+    
+	myfile = open("./"+cuisine[a]+".csv", "a")
+	wr = csv.writer(myfile)
+	wr.writerow(["name", "image", "time", "ingredient", "nutrition", "categoty", "methode"])
+	print("Cuisine: %s" % cuisine[a])
+
+	#find number of page
 	result = requests.get("https://www.bbcgoodfoodme.com/collections/"+cuisine[a]+"/")
 	src = result.content
 	soup = BeautifulSoup(src, "lxml")
@@ -33,27 +31,27 @@ for a in range(0, 1):
 	page = page.find_all("a")
 	page = page[-2].text
 	page = int(page)
- 
+	
 	#get all url of page
 	for i in range(1, page+1):
+		print("	page %d/%d" % (i, page))
 		result = requests.get("https://www.bbcgoodfoodme.com/collections/"+cuisine[a]+"/?page="+str(i))
 		src = result.content
 		soup = BeautifulSoup(src, "lxml")
 		#find all url of recipe
-		recipe = soup.find_all("a", {"rel": "bookmark"})
-		for i in range(0, len(recipe)):
-			
+		box = soup.find('div', {'class': 'list-row'}).find("ul").find_all("li")
+		j = 1
+		for row in box:
+			print("		product %d" % j)
 			#find url of recipe
-			url = recipe[i]["href"]
-   			
+			url = row.findChildren('a')[0]['href']
+			
       		#find name of recipe
-			recipe_name.append(recipe[i].text)
-	
+			recipe_name = row.findChildren('a')[0].text
+			
 			#find image of recipe
-			image = soup.find_all("img", {"class": "svg-image"})
-			image = image[i]["data-src"]
-			recipes_image.append(image)
-
+			recipes_image = row.findChildren('img')[0]['data-src']
+			
 			# find preparation time of recipe
 			result = requests.get(url)
 			src = result.content
@@ -66,28 +64,49 @@ for a in range(0, 1):
 			prep_time = prep_time.replace(" ", "")
 			prep_time = prep_time.replace("mins", "")
 			prep_time = prep_time.replace("min", "")
-			#find ingredients of recipe
+			recipe_time = prep_time
+
+			
+   			# find ingredients of recipe
 			ingredient = soup.find("div", {"class": "ingredient-list"})
 			ingredient = ingredient.find_all("li")
+			recipe_ingredient_recipe = []
 			for y in range(0, len(ingredient)):
 				ingredient[y] = ingredient[y].text
 				ingredient[y] = ingredient[y].replace("\u200b", "")
 				ingredient[y] = ingredient[y].replace("\u2044", "/")
-				recipe_ingredient.append(ingredient[y]+"/")
+				recipe_ingredient_recipe.append(ingredient[y])
+			recipe_ingredient_all =recipe_ingredient_recipe
 
 			#find nutrition of recipe
-			result = requests.get(url)
-			src = result.content
-			soup = BeautifulSoup(src, "lxml")
 			nutrition = soup.find("ul", {"class": "nutrition-list"})
 			nutrition = nutrition.find_all("li")
+			recipe_nutrition_recipe = []
 			for y in range(0, len(nutrition)):
 				nutrition[y] = nutrition[y].text
 				nutrition[y] = nutrition[y].replace("\u200b", "")
 				nutrition[y] = nutrition[y].replace("\u2044", "/")
 				nutrition[y] = nutrition[y].replace("\n", "")
 				nutrition[y] = nutrition[y].replace("\t", "")
-				recipe_nutrition.append(nutrition[y]+"/")
+				recipe_nutrition_recipe.append(nutrition[y])
+			recipe_nutrition_all = recipe_nutrition_recipe
 
-			#write in csv
-			wr.writerow([recipe_name[i], recipes_image[i], prep_time, recipe_ingredient[i], recipe_nutrition[i]])
+			# find method of recipe
+			method = soup.find("div", {"class": "method-list"})
+			method = method.find_all("li")
+			recipe_methode_recipe = []
+			for y in range(0, len(method)):
+				method[y] = method[y].text
+				method[y] = method[y].replace("\u200b", "")
+				method[y] = method[y].replace("\u2044", "/")
+				method[y] = method[y].replace("\n", "")
+				method[y] = method[y].replace("\t", "")
+				recipe_methode_recipe.append(method[y])
+			recipes_methode_all = recipe_methode_recipe
+			wr.writerow([recipe_name, recipes_image, recipe_time, recipe_ingredient_all, recipe_nutrition_all, cuisine[a], recipes_methode_all])
+			j += 1
+		j = 1
+	# # write in csv
+	# for l in range(0, len(recipe_name)):
+	# # 	
+	# 	print(recipes_image[l])
